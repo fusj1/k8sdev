@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
 	"path"
 	"time"
 
@@ -14,6 +15,14 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
 )
+
+func HomeDir() string {
+	if homedir := os.Getenv("HOME"); homedir != "" {
+		return homedir
+	} else {
+		return os.Getenv("USERPROFILE")
+	}
+}
 
 func main() {
 	var config *rest.Config
@@ -54,7 +63,7 @@ func main() {
 		UpdateFunc: func(OldObj, NewObj interface{}) {
 			olddeploy := OldObj.(*appsv1.Deployment)
 			newdeploy := NewObj.(*appsv1.Deployment)
-			fmt.Printf("%s->%s", olddeploy.Name, newdeploy.Name)
+			fmt.Printf("%s->%s\n", olddeploy.Name, newdeploy.Name)
 		},
 		DeleteFunc: func(obj interface{}) {
 			deploy := obj.(*appsv1.Deployment)
@@ -65,6 +74,7 @@ func main() {
 	// 启动工厂函数监听
 	informerfactory.Start(stopper)
 	defer close(stopper)
+	informerfactory.WaitForCacheSync(stopper)
 	deploys, err := deploylistener.Deployments("default").List(labels.Everything())
 	if err != nil {
 		panic(err.Error())
@@ -72,4 +82,5 @@ func main() {
 	for idx, deploy := range deploys {
 		fmt.Printf("%d -->%s", idx+1, deploy.Name)
 	}
+	<-stopper
 }

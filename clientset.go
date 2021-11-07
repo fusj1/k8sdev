@@ -13,7 +13,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-func HomeDir() string {
+func HHomeDir() string {
 	if homedir := os.Getenv("HOME"); homedir != "" {
 		return homedir
 	} else {
