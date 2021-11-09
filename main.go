@@ -82,5 +82,4 @@ func main() {
 		fmt.Println(pod.(*v1.Pod).Name)
 
 	}
-
 }
