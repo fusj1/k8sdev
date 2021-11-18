@@ -1,13 +1,10 @@
 package main
 
 import (
-	"context"
 	"flag"
-	"fmt"
 	"os"
 	"path"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -21,7 +18,7 @@ func HHomeDir() string {
 	}
 }
 
-func clientset() {
+func NewClientSet() (kubernetes.Clientset, error) {
 	var config *rest.Config
 	var kubeconfig *string
 	var err error
@@ -39,14 +36,7 @@ func clientset() {
 	}
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		panic(err.Error())
+		return kubernetes.Clientset{}, err
 	}
-	deployments, err := clientset.AppsV1().Deployments("default").List(context.TODO(), metav1.ListOptions{})
-	if err != nil {
-		panic(err.Error())
-	}
-	for idx, deploy := range deployments.Items {
-		fmt.Printf("%d->%s", idx+1, deploy.Name)
-	}
-
+	return *clientset, nil
 }
